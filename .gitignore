@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Environment secrets - NEVER commit these
+.env
+
+# Build outputs
+dist/
+build/
+
+# OS junk
+.DS_Store
+Thumbs.db

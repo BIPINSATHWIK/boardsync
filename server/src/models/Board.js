@@ -1,0 +1,18 @@
+const mongoose = require('mongoose');
+
+const memberSchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    role: { type: String, enum: ['owner', 'editor', 'viewer'], required: true },
+  },
+  { _id: false }
+);
+
+const boardSchema = new mongoose.Schema({
+  title: { type: String, required: true, trim: true },
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  members: [memberSchema],
+  createdAt: { type: Date, default: Date.now },
+});
+
+module.exports = mongoose.model('Board', boardSchema);

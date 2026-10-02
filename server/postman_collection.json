@@ -1,0 +1,357 @@
+{
+  "info": {
+    "name": "BoardSync API",
+    "_postman_id": "boardsync-v1",
+    "description": "Complete REST API collection for BoardSync. Set {{baseUrl}} to http://localhost:5000. After login/signup, set {{accessToken}} and {{refreshToken}} from the response.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",      "value": "http://localhost:5000", "type": "string" },
+    { "key": "accessToken",  "value": "",                       "type": "string" },
+    { "key": "refreshToken", "value": "",                       "type": "string" },
+    { "key": "boardId",      "value": "",                       "type": "string" },
+    { "key": "listId",       "value": "",                       "type": "string" },
+    { "key": "cardId",       "value": "",                       "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /auth/signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var r = pm.response.json();",
+                  "if (r.accessToken)  pm.collectionVariables.set('accessToken',  r.accessToken);",
+                  "if (r.refreshToken) pm.collectionVariables.set('refreshToken', r.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var r = pm.response.json();",
+                  "if (r.accessToken)  pm.collectionVariables.set('accessToken',  r.accessToken);",
+                  "if (r.refreshToken) pm.collectionVariables.set('refreshToken', r.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /auth/refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var r = pm.response.json();",
+                  "if (r.accessToken)  pm.collectionVariables.set('accessToken',  r.accessToken);",
+                  "if (r.refreshToken) pm.collectionVariables.set('refreshToken', r.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/refresh",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /auth/logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Boards",
+      "item": [
+        {
+          "name": "POST /boards",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var r = pm.response.json();",
+                  "if (r.board && r.board._id) pm.collectionVariables.set('boardId', r.board._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/boards",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My First Board\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /boards",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/boards"
+          }
+        },
+        {
+          "name": "GET /boards/:boardId",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/boards/{{boardId}}"
+          }
+        },
+        {
+          "name": "PATCH /boards/:boardId",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/boards/{{boardId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Renamed Board\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /boards/:boardId/members",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/boards/{{boardId}}/members",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"collaborator@example.com\",\n  \"role\": \"editor\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /boards/:boardId",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/boards/{{boardId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lists",
+      "item": [
+        {
+          "name": "POST /boards/:boardId/lists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var r = pm.response.json();",
+                  "if (r.list && r.list._id) pm.collectionVariables.set('listId', r.list._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/boards/{{boardId}}/lists",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"To Do\",\n  \"order\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "PATCH /lists/:listId",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/lists/{{listId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Doing\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /lists/:listId",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/lists/{{listId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cards",
+      "item": [
+        {
+          "name": "POST /lists/:listId/cards",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var r = pm.response.json();",
+                  "if (r.card && r.card._id) pm.collectionVariables.set('cardId', r.card._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/lists/{{listId}}/cards",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My first card\",\n  \"description\": \"Details here\",\n  \"order\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "PATCH /cards/:cardId — update (version match → 200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/cards/{{cardId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 0,\n  \"title\": \"Updated card title\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PATCH /cards/:cardId — conflict (stale version → 409)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/cards/{{cardId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": -1,\n  \"title\": \"Should trigger 409\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /cards/:cardId",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/cards/{{cardId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error cases",
+      "item": [
+        {
+          "name": "401 — No token",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/boards"
+          }
+        },
+        {
+          "name": "400 — Validation failure (signup missing password)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bad@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "404 — Board not found",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/boards/000000000000000000000000"
+          }
+        }
+      ]
+    }
+  ]
+}
