@@ -1,11 +1,26 @@
 import { create } from 'zustand';
-import { post, get } from '../api/client';
-import { setTokens, clearTokens } from '../api/client';
+import { post, setTokens, clearTokens, setOnUnauthorized } from '../api/client';
 
-const useAuthStore = create((set) => ({
-  user: (() => {
-    try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
-  })(),
+const useAuthStore = create((set) => {
+  // Listen for unauthorized/session expired events from the API client
+  setOnUnauthorized(() => {
+    set({ user: null, error: null, fieldErrors: {} });
+  });
+
+  return {
+    user: (() => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          localStorage.removeItem('user');
+          return null;
+        }
+        return JSON.parse(localStorage.getItem('user'));
+      } catch {
+        localStorage.removeItem('user');
+        return null;
+      }
+    })(),
   isLoading: false,
   error: null,
   // Field-level errors from server validation (e.g. { email: '...', password: '...' })
@@ -54,6 +69,7 @@ const useAuthStore = create((set) => ({
   },
 
   clearError: () => set({ error: null, fieldErrors: {} }),
-}));
+  };
+});
 
 export default useAuthStore;

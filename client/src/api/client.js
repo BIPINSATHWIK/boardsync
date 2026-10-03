@@ -9,14 +9,32 @@ let _socketId = null;
 export const setSocketId = (id) => { _socketId = id; };
 export const getSocketId = () => _socketId;
 
+let _onUnauthorized = null;
+export const setOnUnauthorized = (cb) => { _onUnauthorized = cb; };
+
 export const setTokens = (at, rt) => {
-  localStorage.setItem('accessToken', at);
+  if (at) localStorage.setItem('accessToken', at);
   if (rt) localStorage.setItem('refreshToken', rt);
 };
 
 export const clearTokens = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
+};
+
+const handleAuthFailure = () => {
+  clearTokens();
+  if (_onUnauthorized) {
+    _onUnauthorized();
+  }
+  if (
+    typeof window !== 'undefined' &&
+    window.location.pathname !== '/login' &&
+    window.location.pathname !== '/signup'
+  ) {
+    window.location.href = '/login';
+  }
 };
 
 const rawFetch = async (method, path, body, token) => {
@@ -28,32 +46,49 @@ const rawFetch = async (method, path, body, token) => {
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   return { status: res.status, data };
+};
+
+let _refreshPromise = null;
+
+const doRefreshToken = async () => {
+  if (!_refreshPromise) {
+    _refreshPromise = (async () => {
+      const rt = getRefreshToken();
+      if (!rt) return null;
+      try {
+        const refresh = await rawFetch('POST', '/auth/refresh', { refreshToken: rt });
+        if (refresh.status === 200 && refresh.data?.accessToken) {
+          setTokens(refresh.data.accessToken, refresh.data.refreshToken);
+          return refresh.data.accessToken;
+        }
+      } catch {
+        // network or server error
+      }
+      return null;
+    })().finally(() => {
+      _refreshPromise = null;
+    });
+  }
+  return _refreshPromise;
 };
 
 const request = async (method, path, body) => {
   let token = getAccessToken();
   let { status, data } = await rawFetch(method, path, body, token);
 
-  if (status === 401) {
-    const rt = getRefreshToken();
-    if (rt) {
-      const refresh = await rawFetch('POST', '/auth/refresh', { refreshToken: rt });
-      if (refresh.status === 200) {
-        setTokens(refresh.data.accessToken, refresh.data.refreshToken);
-        token = refresh.data.accessToken;
-        const retry = await rawFetch(method, path, body, token);
-        status = retry.status;
-        data = retry.data;
-      } else {
-        clearTokens();
-        window.location.href = '/login';
-        throw new Error('Session expired');
-      }
+  const isAuthEndpoint = path.startsWith('/auth/');
+
+  if (status === 401 && !isAuthEndpoint) {
+    const newToken = await doRefreshToken();
+    if (newToken) {
+      token = newToken;
+      const retry = await rawFetch(method, path, body, token);
+      status = retry.status;
+      data = retry.data;
     } else {
-      clearTokens();
-      window.location.href = '/login';
+      handleAuthFailure();
       throw new Error('Session expired');
     }
   }

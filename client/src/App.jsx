@@ -6,17 +6,19 @@ import BoardListPage from './pages/BoardListPage';
 import BoardDetailPage from './pages/BoardDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Toast from './components/Toast';
-import { connectSocket } from './store/socketStore';
+import { connectSocket, disconnectSocket } from './store/socketStore';
 import useAuthStore from './store/authStore';
 
 function App() {
   const user = useAuthStore((s) => s.user);
 
-  // Reconnect socket on page reload if already logged in
+  // Reconnect socket on page reload if already logged in, or disconnect when logged out
   useEffect(() => {
     if (user) {
       const token = localStorage.getItem('accessToken');
       if (token) connectSocket(token);
+    } else {
+      disconnectSocket();
     }
   }, [user]);
 

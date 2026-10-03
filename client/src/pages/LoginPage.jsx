@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { connectSocket } from '../store/socketStore';
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const { login, isLoading, error, clearError, user } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +18,7 @@ export default function LoginPage() {
     if (ok) {
       const token = localStorage.getItem('accessToken');
       if (token) connectSocket(token);
+      navigate('/');
     }
   };
 
