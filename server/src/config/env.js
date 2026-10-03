@@ -4,7 +4,6 @@ const required = [
   'MONGO_URI',
   'JWT_ACCESS_SECRET',
   'JWT_REFRESH_SECRET',
-  'PORT',
   'CLIENT_ORIGIN',
 ];
 
@@ -21,5 +20,9 @@ module.exports = {
   JWT_ACCESS_EXPIRY: process.env.JWT_ACCESS_EXPIRY || '15m',
   JWT_REFRESH_EXPIRY: process.env.JWT_REFRESH_EXPIRY || '7d',
   PORT: parseInt(process.env.PORT, 10) || 5000,
-  CLIENT_ORIGIN: process.env.CLIENT_ORIGIN,
+  CLIENT_ORIGIN: process.env.CLIENT_ORIGIN
+    ? (process.env.CLIENT_ORIGIN.includes(',')
+        ? process.env.CLIENT_ORIGIN.split(',').map((s) => s.trim())
+        : process.env.CLIENT_ORIGIN.trim())
+    : 'http://localhost:5173',
 };
